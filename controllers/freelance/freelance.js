@@ -173,7 +173,7 @@ exports.getOneFreelance = (req, res, next) => {
   db.query(`SELECT * FROM freelancedata WHERE id= ?`, id, (error, results) => {
     if (results.length === 0) {
       return res
-        .status(400)
+        .status(404)
         .json(
           responseBuilder.buildErrorResponse(
             errorsMessage.freelanceNotFound.code,
@@ -211,6 +211,7 @@ exports.updateFreelanceData = (req, res, next) => {
   const firstname = JSON.stringify(req.body.firstname);
   const birthdate = JSON.stringify(req.body.birthdate);
   const societyName = JSON.stringify(req.body.societyName);
+  const expertise = JSON.stringify(req.body.expertise);
 
   db.query(
     `SELECT * FROM freelancedata WHERE id=?`,
@@ -218,16 +219,14 @@ exports.updateFreelanceData = (req, res, next) => {
     (error, results) => {
       if (results.length === 0) {
         return res
-          .status(400)
+          .status(404)
           .json(
             responseBuilder.buildErrorResponse(
               errorsMessage.freelanceNotFound.code,
               errorsMessage.freelanceNotFound.message
             )
           );
-      }
-
-      if (results.length > 0) {
+      } else if (results.length > 0) {
         if (req.file) {
           if (results[0].profilImgUrl) {
             // suppression de l'ancienne image si l'on change l'image
@@ -236,16 +235,10 @@ exports.updateFreelanceData = (req, res, next) => {
             )[1];
             fs.unlink(`images/freelanceProfil/${filename}`, () => {});
           }
-          const file = `${req.file.filename}`;
-          const profilImgUrl = JSON.stringify(
-            `${req.protocol}://${req.get(
-              "host"
-            )}/images/freelanceProfil/${file}`
-          );
+          const file = JSON.stringify(`${req.file.filename}`);
 
-          //possibilité de mettre les données entre guillemets pour les vachar et text
           db.query(
-            `UPDATE freelancedata SET email=${email}, profilImgUrl=${profilImgUrl}, lastname=${lastname}, firstname=${firstname}, birthdate=${birthdate}, societyName=${societyName}  WHERE id=${freelanceId}`,
+            `UPDATE freelancedata SET email=${email}, profilImgUrl=${file}, lastname=${lastname}, firstname=${firstname}, birthdate=${birthdate}, societyName=${societyName}, expertise=${expertise}  WHERE id=${freelanceId}`,
             (error, results) => {
               if (error) {
                 return res.status(400).json(error);
@@ -278,6 +271,98 @@ exports.updateFreelanceData = (req, res, next) => {
             }
           );
         }
+      } else {
+        return res
+          .status(500)
+          .json(
+            responseBuilder.buildErrorResponse(
+              errorsMessage.internalServerError.code,
+              errorsMessage.internalServerError.message,
+              { error }
+            )
+          );
+      }
+    }
+  );
+};
+
+//Supprimer un freelance et ses expériences
+
+exports.deleteFreelance = (req, res, next) => {
+  const freelanceId = req.params.id;
+
+  db.query(
+    `SELECT * FROM freelancedata WHERE id=${freelanceId}`,
+    (error, results) => {
+      if (results.length === 0) {
+        return res
+          .status(404)
+          .json(
+            responseBuilder.buildErrorResponse(
+              errorsMessage.freelanceNotFound.code,
+              errorsMessage.freelanceNotFound.message
+            )
+          );
+      } else if (results.length > 0) {
+        if (results[0].profilImgUrl) {
+          fs.unlink(
+            `images/freelanceProfil/${results[0].profilImgUrl}`,
+            () => {}
+          );
+        }
+        db.query(
+          `DELETE FROM freelancedata WHERE id=${freelanceId}`,
+          (error, results) => {
+            if (error) {
+              return res.status(400).json(error);
+            }
+            db.query(
+              `SELECT * FROM freelanceexp WHERE freelanceId=${freelanceId}`,
+              (error, results) => {
+                for (let i = 0; i < results.length; i++) {
+                  if (results[i].imgUrl2) {
+                    fs.unlink(
+                      `images/freelanceExp/${results[i].imgUrl2}`,
+                      () => {}
+                    );
+                  }
+                  if (results[i].imgUrl1) {
+                    fs.unlink(
+                      `images/freelanceExp/${results[i].imgUrl1}`,
+                      () => {}
+                    );
+                  }
+                }
+                db.query(
+                  `DELETE FROM freelanceexp WHERE freelanceId=${freelanceId}`,
+                  (error, results) => {
+                    if (error) {
+                      return res.status(400).json(error);
+                    }
+                    console.log(results);
+                    return res
+                      .status(200)
+                      .json(
+                        responseBuilder.buildValidresponse(
+                          validMessages.deleteFreelance
+                        )
+                      );
+                  }
+                );
+              }
+            );
+          }
+        );
+      } else {
+        return res
+          .status(500)
+          .json(
+            responseBuilder.buildErrorResponse(
+              errorsMessage.internalServerError.code,
+              errorsMessage.internalServerError.message,
+              { error }
+            )
+          );
       }
     }
   );

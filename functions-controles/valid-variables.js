@@ -47,6 +47,10 @@ exports.deleteFreelanceExp = {
   message: "L'expérience du freelance a été supprimée de la base de données",
 };
 
+exports.deleteAllFreelanceExp = {
+  message: "Toutes les expériences du freelance ont été supprimées de la base de données",
+};
+
 exports.getAllfreelances = {
   message: "Voici les données de tous les freelance",
 };
