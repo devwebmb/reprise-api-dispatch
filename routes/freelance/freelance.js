@@ -21,6 +21,9 @@ router.post(
 router.get("/freelance", freelanceCtrl.getAllFreelances);
 router.get("/freelance/:id", freelanceCtrl.getOneFreelance);
 
+router.get("/freelanceExp/:id", freelanceExpCtrl.getOneExperience)
+router.get("/freelanceExp/allExperiences/:id", freelanceExpCtrl.getFreelanceExp)
+
 //put
 router.put("/freelance/update/:id", multer, freelanceCtrl.updateFreelanceData);
 

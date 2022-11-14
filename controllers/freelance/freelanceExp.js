@@ -195,3 +195,52 @@ exports.deleteOneFreelanceExp = (req, res, next) => {
     }
   );
 };
+
+//Obtenir une expérience
+exports.getOneExperience = (req, res, next) => {
+  const expId = req.params.id;
+
+  db.query(`SELECT * FROM freelanceexp WHERE id=${expId}`, (error, results) => {
+    if (results.length === 0) {
+      return res
+        .status(404)
+        .json(
+          responseBuilder.buildErrorResponse(
+            errorsMessage.experienceNotFound.code,
+            errorsMessage.experienceNotFound.message
+          )
+        );
+    } else if (results.length > 0) {
+      return res
+        .status(200)
+        .json(
+          responseBuilder.buildValidresponse(
+            validMessages.getOneFreelanceExp.message,
+            results
+          )
+        );
+    }
+  });
+};
+
+//obtenir toutes les experiences d'un freelance
+exports.getFreelanceExp = (req, res, next) => {
+  const freelanceId = req.params.id;
+
+  db.query(
+    `SELECT * FROM freelanceexp WHERE freelanceId=${freelanceId}`,
+    (error, results) => {
+      if (error) {
+        return res.status(404).json(error);
+      }
+      return res
+        .status(200)
+        .json(
+          responseBuilder.buildValidresponse(
+            validMessages.getAllFreelanceExp.message,
+            results
+          )
+        );
+    }
+  );
+};

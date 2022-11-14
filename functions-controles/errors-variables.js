@@ -44,6 +44,11 @@ exports.clientNotFound = {
     "Le client dont on veut modifier ou supprimer les données n'existe pas dans la base de données",
 };
 
+exports.missionNotFound = {
+  code: "4044", 
+  message: "La mission que l'on veut obtenir, modifier ou supprimer n'est pas présente dans la base de données"
+}
+
 //erreurs 500
 exports.internalServerError = {
   code: "5000",

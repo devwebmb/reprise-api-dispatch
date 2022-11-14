@@ -4,6 +4,9 @@ exports.createFreelance = {
 exports.createClient = {
   message: "Le client a été ajouté à la base de données",
 };
+exports.createMission = {
+  message: "La mission a été ajoutée à la base de données",
+};
 
 exports.connectFreelance = {
   message: "le freelance a bien été connecté.",
@@ -51,10 +54,41 @@ exports.deleteAllFreelanceExp = {
   message: "Toutes les expériences du freelance ont été supprimées de la base de données",
 };
 
+exports.deleteOneMission = {
+  message: "La mission a été effacée de la base de données"
+}
+
 exports.getAllfreelances = {
   message: "Voici les données de tous les freelance",
+};
+exports.getAllClients = {
+  message: "Voici les données de tous les clients",
 };
 
 exports.getOneFreelance = {
   message: "Voici les données du freelance",
 };
+exports.getOneClient = {
+  message: "Voici les données du client",
+};
+
+exports.getOneFreelanceExp = {
+  message: "Voici les données de l'expérience du freelance",
+};
+
+exports.getAllFreelanceExp = {
+  message: "Voici les données des expériences du freelance",
+};
+
+exports.getOneMission = {
+  message: "Voici les données de la mission."
+}
+
+exports.getAllMissionClient = {
+  message: "Voici les données des missions du client."
+}
+
+exports.getAllMission = {
+  message: "Voici les données de toutes les missions."
+}
+
