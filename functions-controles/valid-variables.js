@@ -58,6 +58,10 @@ exports.deleteOneMission = {
   message: "La mission a été effacée de la base de données"
 }
 
+exports.deleteClient = {
+  message: "Le client et toutes ses missions ont été retirées de la vbase de données"
+}
+
 exports.getAllfreelances = {
   message: "Voici les données de tous les freelance",
 };

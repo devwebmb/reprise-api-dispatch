@@ -45,23 +45,19 @@ exports.signup = (req, res, next) => {
   const client = req.body;
   bcrypt
     .hash(client.password, 10)
-      .then((hash) => {
-        console.log(hash);
+    .then((hash) => {
+      console.log(hash);
       client.password = hash;
-      db.query(
-        `INSERT INTO clientdata SET ?`,
-        client,
-        (err, result, field) => {
-          if (err) {
-            const error = err.sqlMessage;
-            return res.status(400).json({ error });
-          }
-          return res.status(201).json({
-            message: "Le client a été ajouté à la base de données",
-            result,
-          });
+      db.query(`INSERT INTO clientdata SET ?`, client, (err, result, field) => {
+        if (err) {
+          const error = err.sqlMessage;
+          return res.status(400).json({ error });
         }
-      );
+        return res.status(201).json({
+          message: "Le client a été ajouté à la base de données",
+          result,
+        });
+      });
     })
     .catch((error) =>
       res
@@ -285,5 +281,44 @@ exports.updateClientData = (req, res, next) => {
 
 //effacer un client
 exports.deleteOneClient = (req, res, next) => {
-  
-}
+  const clientId = req.params.id;
+
+  db.query(
+    `SELECT * FROM clientdata WHERE id=${clientId}`,
+    (error, results) => {
+      if (results.length === 0) {
+        return res
+          .status(404)
+          .json(
+            responseBuilder.buildErrorResponse(
+              errorsMessage.clientNotFound.message
+            )
+          );
+      } else if (results.length > 0) {
+        db.query(
+          `DELETE FROM clientdata WHERE id=${clientId}`,
+          (error, results) => {
+            if (error) {
+              return res.status(400).json(error);
+            }
+            db.query(
+              `DELETE FROM missions WHERE clientId=${clientId}`,
+              (error, results) => {
+                if (error) {
+                  return res.status(400).json(error);
+                }
+                return res
+                  .status(200)
+                  .json(
+                    responseBuilder.buildValidresponse(
+                      validMessages.deleteClient.message
+                    )
+                  );
+              }
+            );
+          }
+        );
+      }
+    }
+  );
+};
