@@ -46,12 +46,18 @@ exports.signup = (req, res, next) => {
   bcrypt
     .hash(client.password, 10)
     .then((hash) => {
-      console.log(hash);
       client.password = hash;
       db.query(`INSERT INTO clientdata SET ?`, client, (err, result, field) => {
         if (err) {
           const error = err.sqlMessage;
-          return res.status(400).json({ error });
+          return res
+            .status(400)
+            .json(
+              responseBuilder.buildErrorResponse(
+                errorsMessage.emailNotAvailable.message,
+                errorsMessage.emailNotAvailable.code
+              )
+            );
         }
         return res.status(201).json({
           message: "Le client a été ajouté à la base de données",
@@ -146,7 +152,7 @@ exports.login = (req, res, next) => {
   );
 };
 
-//Obtenir tous les freelances
+//Obtenir tous les clients
 exports.getAllClients = (req, res, next) => {
   db.query(`SELECT * From clientdata`, (error, results) => {
     if (error) {
@@ -163,7 +169,7 @@ exports.getAllClients = (req, res, next) => {
   });
 };
 
-//Obtenir un freelance
+//Obtenir un client
 exports.getOneClient = (req, res, next) => {
   const id = req.params.id;
   db.query(`SELECT * FROM clientdata WHERE id= ?`, id, (error, results) => {
@@ -199,7 +205,7 @@ exports.getOneClient = (req, res, next) => {
   });
 };
 
-//Modifier un freelance
+//Modifier un client
 exports.updateClientData = (req, res, next) => {
   const clientId = req.params.id;
   const email = JSON.stringify(req.body.email);
@@ -228,10 +234,19 @@ exports.updateClientData = (req, res, next) => {
             const filename = results[0].profilImgUrl;
             fs.unlink(`images/clientProfil/${filename}`, () => {});
           }
-          const file = JSON.stringify(`${req.file.filename}`);
+          const profilImgUrl = JSON.stringify(`${req.file.filename}`);
 
           db.query(
-            `UPDATE clientdata SET email=${email}, profilImgUrl=${file}, lastname=${lastname}, firstname=${firstname}, societyName=${societyName}, phoneNumber=${phoneNumber}  WHERE id=${clientId}`,
+            `UPDATE clientdata SET email=?, firstname = ?, lastname = ?, societyName = ?, phoneNumber = ?, profilImgUrl = ? WHERE id=?`,
+            [
+              email,
+              firstname,
+              lastname,
+              societyName,
+              phoneNumber,
+              profilImgUrl,
+              clientId,
+            ],
             (error, results) => {
               if (error) {
                 return res.status(400).json(error);
@@ -248,7 +263,8 @@ exports.updateClientData = (req, res, next) => {
           );
         } else if (!req.file) {
           db.query(
-            `UPDATE clientdata SET email=${email}, lastname=${lastname}, firstname=${firstname},  societyName=${societyName}, phoneNumber=${phoneNumber}  WHERE id=${clientId}`,
+            `UPDATE clientdata SET email=?, firstname = ?, lastname = ?, societyName = ?, phoneNumber = ? WHERE id=?`,
+            [email, firstname, lastname, societyName, phoneNumber, clientId],
             (error, results) => {
               if (error) {
                 return res.status(400).json(error);
@@ -284,7 +300,8 @@ exports.deleteOneClient = (req, res, next) => {
   const clientId = req.params.id;
 
   db.query(
-    `SELECT * FROM clientdata WHERE id=${clientId}`,
+    `SELECT * FROM clientdata WHERE id=?`,
+    clientId,
     (error, results) => {
       if (results.length === 0) {
         return res
@@ -296,13 +313,15 @@ exports.deleteOneClient = (req, res, next) => {
           );
       } else if (results.length > 0) {
         db.query(
-          `DELETE FROM clientdata WHERE id=${clientId}`,
+          `DELETE FROM clientdata WHERE id=?`,
+          clientId,
           (error, results) => {
             if (error) {
               return res.status(400).json(error);
             }
             db.query(
-              `DELETE FROM missions WHERE clientId=${clientId}`,
+              `DELETE FROM missions WHERE clientId=?`,
+              clientId,
               (error, results) => {
                 if (error) {
                   return res.status(400).json(error);

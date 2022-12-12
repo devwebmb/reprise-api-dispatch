@@ -42,7 +42,7 @@ exports.addMission = (req, res, next) => {
 exports.getOneMission = (req, res, next) => {
   const missionId = req.params.id;
 
-  db.query(`SELECT * FROM missions WHERE id=${missionId}`, (error, results) => {
+  db.query(`SELECT * FROM missions WHERE id=?`,[missionId], (error, results) => {
     if (results.length === 0) {
       return res
         .status(404)
@@ -97,7 +97,7 @@ exports.getAllClientMissions = (req, res, next) => {
   const clientId = req.params.id;
 
   db.query(
-    `SELECT * FROM missions WHERE clientId=${clientId}`,
+    `SELECT * FROM missions WHERE clientId=?`,[clientId],
     (error, results) => {
       if (error) {
         return res.status(400).json(error);
@@ -118,7 +118,7 @@ exports.getAllClientMissions = (req, res, next) => {
 exports.deleteOneMission = (req, res, next) => {
   const missionId = req.params.id;
 
-  db.query(`DELETE FROM missions WHERE id=${missionId}`, (error, results) => {
+  db.query(`DELETE FROM missions WHERE id=?`,[missionId], (error, results) => {
     if (error) {
       return res.status(400).json(error);
     }

@@ -11,15 +11,24 @@ exports.addFreelanceExp = (req, res, next) => {
   const freelanceId = req.body.freelanceId;
   const expTitle = JSON.stringify(req.body.expTitle);
   const expContent = JSON.stringify(req.body.expContent);
-  const startExpDate = JSON.stringify(req.body.startExpDate);
-  const endExpDate = JSON.stringify(req.body.endExpDate);
+  const startExpDate = req.body.startExpDate;
+  const endExpDate = req.body.endExpDate;
 
   if (req.files.length > 0) {
     const file1 = req.files[0] ? `${req.files[0].filename}` : "";
     const file2 = req.files[1] ? `${req.files[1].filename}` : "";
 
     db.query(
-      `INSERT INTO freelanceexp SET freelanceId=${freelanceId}, expTitle=${expTitle}, expContent=${expContent}, startExpDate=${startExpDate}, endExpDate=${endExpDate}, imgUrl1="${file1}",  imgUrl2="${file2}"`,
+      `INSERT INTO freelanceexp SET freelanceId=?, expTitle=?, expContent=?, startExpDate=?, endExpDate=?, imgUrl1="?",  imgUrl2=?`,
+      [
+        freelanceId,
+        expTitle,
+        expContent,
+        startExpDate,
+        endExpDate,
+        file1,
+        file2,
+      ],
       (error, results) => {
         if (error) {
           return res.status(400).json(error);
@@ -36,7 +45,8 @@ exports.addFreelanceExp = (req, res, next) => {
     );
   } else if (req.files.length === 0) {
     db.query(
-      `INSERT INTO freelanceexp SET freelanceId=${freelanceId}, expTitle=${expTitle}, expContent=${expContent}, startExpDate=${startExpDate}, endExpDate=${endExpDate}`,
+      `INSERT INTO freelanceexp SET freelanceId=?, expTitle=?, expContent=?, startExpDate=?, endExpDate=?`,
+      [freelanceId, expTitle, expContent, startExpDate, endExpDate],
       (error, results) => {
         if (error) {
           return res.status(400).json(error);
@@ -74,7 +84,8 @@ exports.updateFreelanceExp = (req, res, next) => {
   const endExpDate = JSON.stringify(req.body.endExpDate);
 
   db.query(
-    `SELECT * FROM freelanceexp WHERE id=${freelanceExpId}`,
+    `SELECT * FROM freelanceexp WHERE id=?`,
+    freelanceExpId,
     (error, results) => {
       if (results.length === 0) {
         return res
@@ -94,7 +105,16 @@ exports.updateFreelanceExp = (req, res, next) => {
           : results.imgUrl2;
 
         db.query(
-          `UPDATE freelanceexp SET  expTitle=${expTitle}, expContent=${expContent}, startExpDate=${startExpDate}, endExpDate=${endExpDate}, imgUrl1="${file1}",  imgUrl2="${file2}"`,
+          `UPDATE freelanceexp SET  expTitle=?, expContent=?, startExpDate=?, endExpDate=?, imgUrl1=?,  imgUrl2=? WHERE id=?`,
+          [
+            expTitle,
+            expContent,
+            startExpDate,
+            endExpDate,
+            file1,
+            file2,
+            freelanceExpId,
+          ],
           (error, results) => {
             if (error) {
               return res.status(400).json(error);
@@ -111,7 +131,8 @@ exports.updateFreelanceExp = (req, res, next) => {
         );
       } else if (req.files.length === 0) {
         db.query(
-          `UPDATE freelanceexp SET  expTitle=${expTitle}, expContent=${expContent}, startExpDate=${startExpDate}, endExpDate=${endExpDate}"`,
+          `UPDATE freelanceexp SET  expTitle=?, expContent=?, startExpDate=?, endExpDate=? WHERE id=?`,
+          [expTitle, expContent, startExpDate, endExpDate, freelanceExpId],
           (error, results) => {
             if (error) {
               return res.status(400).json(error);
@@ -146,7 +167,7 @@ exports.deleteOneFreelanceExp = (req, res, next) => {
   const freelanceExpId = req.params.id;
 
   db.query(
-    `SELECT * FROM freelanceexp WHERE id=${freelanceExpId}`,
+    `SELECT * FROM freelanceexp WHERE id=?`,[freelanceExpId],
     (error, results) => {
       if (results.length === 0) {
         return res
@@ -166,7 +187,7 @@ exports.deleteOneFreelanceExp = (req, res, next) => {
         }
 
         db.query(
-          `DELETE FROM freelanceexp WHERE id=${freelanceExpId}`,
+          `DELETE FROM freelanceexp WHERE id=?`,[freelanceExpId],
           (error, results) => {
             if (error) {
               return res.status(400).json(error);
@@ -200,7 +221,7 @@ exports.deleteOneFreelanceExp = (req, res, next) => {
 exports.getOneExperience = (req, res, next) => {
   const expId = req.params.id;
 
-  db.query(`SELECT * FROM freelanceexp WHERE id=${expId}`, (error, results) => {
+  db.query(`SELECT * FROM freelanceexp WHERE id=?`,[expId], (error, results) => {
     if (results.length === 0) {
       return res
         .status(404)
@@ -228,7 +249,7 @@ exports.getFreelanceExp = (req, res, next) => {
   const freelanceId = req.params.id;
 
   db.query(
-    `SELECT * FROM freelanceexp WHERE freelanceId=${freelanceId}`,
+    `SELECT * FROM freelanceexp WHERE freelanceId=?`,[freelanceId],
     (error, results) => {
       if (error) {
         return res.status(404).json(error);

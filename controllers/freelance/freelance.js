@@ -17,7 +17,9 @@ exports.signup = (req, res, next) => {
     !req.body.email ||
     !req.body.password ||
     !req.body.lastname ||
-    !req.body.firstname
+    !req.body.firstname ||
+    !req.body.job ||
+    !req.body.presentation
   ) {
     return res
       .status(400)
@@ -53,7 +55,14 @@ exports.signup = (req, res, next) => {
         (err, result, field) => {
           if (err) {
             const error = err.sqlMessage;
-            return res.status(400).json({ error });
+            return res
+              .status(400)
+              .json(
+                responseBuilder.buildErrorResponse(
+                  errorsMessage.emailNotAvailable.message,
+                  errorsMessage.emailNotAvailable.code
+                )
+              );
           }
           return res.status(201).json({
             message: "Le freelance a été ajouté à la base de données",
@@ -235,7 +244,17 @@ exports.updateFreelanceData = (req, res, next) => {
           const file = JSON.stringify(`${req.file.filename}`);
 
           db.query(
-            `UPDATE freelancedata SET email=${email}, profilImgUrl=${file}, lastname=${lastname}, firstname=${firstname}, birthdate=${birthdate}, societyName=${societyName}, expertise=${expertise}  WHERE id=${freelanceId}`,
+            `UPDATE freelancedata SET email=?, profilImgUrl=?, lastname=?, firstname=?, birthdate=?, societyName=?, expertise=?  WHERE id=?`,
+            [
+              email,
+              file,
+              lastname,
+              firstname,
+              birthdate,
+              societyName,
+              expertise,
+              freelanceId,
+            ],
             (error, results) => {
               if (error) {
                 return res.status(400).json(error);
@@ -252,7 +271,16 @@ exports.updateFreelanceData = (req, res, next) => {
           );
         } else if (!req.file) {
           db.query(
-            `UPDATE freelancedata SET email=${email}, lastname=${lastname}, firstname=${firstname}, birthdate=${birthdate}, societyName=${societyName}  WHERE id=${freelanceId}`,
+            `UPDATE freelancedata SET email=?,  lastname=?, firstname=?, birthdate=?, societyName=?, expertise=?  WHERE id=?`,
+            [
+              email,
+              lastname,
+              firstname,
+              birthdate,
+              societyName,
+              expertise,
+              freelanceId,
+            ],
             (error, results) => {
               if (error) {
                 return res.status(400).json(error);
@@ -289,7 +317,7 @@ exports.deleteFreelance = (req, res, next) => {
   const freelanceId = req.params.id;
 
   db.query(
-    `SELECT * FROM freelancedata WHERE id=${freelanceId}`,
+    `SELECT * FROM freelancedata WHERE id=?`, freelanceId,
     (error, results) => {
       if (results.length === 0) {
         return res
@@ -308,13 +336,13 @@ exports.deleteFreelance = (req, res, next) => {
           );
         }
         db.query(
-          `DELETE FROM freelancedata WHERE id=${freelanceId}`,
+          `DELETE FROM freelancedata WHERE id=?`,freelanceId,
           (error, results) => {
             if (error) {
               return res.status(400).json(error);
             }
             db.query(
-              `SELECT * FROM freelanceexp WHERE freelanceId=${freelanceId}`,
+              `SELECT * FROM freelanceexp WHERE freelanceId=?`,freelanceId,
               (error, results) => {
                 for (let i = 0; i < results.length; i++) {
                   if (results[i].imgUrl2) {
@@ -331,7 +359,7 @@ exports.deleteFreelance = (req, res, next) => {
                   }
                 }
                 db.query(
-                  `DELETE FROM freelanceexp WHERE freelanceId=${freelanceId}`,
+                  `DELETE FROM freelanceexp WHERE freelanceId=?`,freelanceId,
                   (error, results) => {
                     if (error) {
                       return res.status(400).json(error);
