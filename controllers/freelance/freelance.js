@@ -175,7 +175,7 @@ exports.getAllFreelances = (req, res, next) => {
   });
 };
 
-//Obtenir un freelance
+//Obtenir un freelance avec l'id
 exports.getOneFreelance = (req, res, next) => {
   const id = req.params.id;
   db.query(`SELECT * FROM freelancedata WHERE id= ?`, id, (error, results) => {

@@ -1,4 +1,4 @@
-exports.buildErrorResponse = (code, message) => {
+exports.buildErrorResponse = ( message, code) => {
   return { code, message };
 };
 
